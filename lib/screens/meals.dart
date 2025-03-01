@@ -4,16 +4,15 @@ import 'package:meal_app/widget/meal_details.dart';
 import 'package:meal_app/widget/meal_item.dart';
 
 class Meals extends StatelessWidget {
-  const Meals({super.key, required this.meals, required this.onToggleFavorite, this.title});
+  const Meals({super.key, required this.meals, this.title});
 
   final String? title;
   final List<Meal> meals;
-  final void Function(Meal meal) onToggleFavorite;
 
   void selectMeal(BuildContext context, Meal meal) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (ctx) => MealDetails(meals: meal , onToggleFavorite: onToggleFavorite,), // ✅ Fix typo: 'meals' to 'meal'
+        builder: (ctx) => MealDetails(meals: meal ), // ✅ Fix typo: 'meals' to 'meal'
       ),
     );
   }

@@ -1,21 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:meal_app/data/dummy_data.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meal_app/provides/meals_provider.dart';
+import 'package:meal_app/provides/favorite_provider.dart';
+import 'package:meal_app/provides/filters_provider.dart';
 import 'package:meal_app/models/meal.dart';
 import 'package:meal_app/screens/categories.dart';
 import 'package:meal_app/screens/filters.dart';
 import 'package:meal_app/screens/meals.dart';
 import 'package:meal_app/widget/main_Drawer.dart';
 
-class Tabs extends StatefulWidget {
+class Tabs extends ConsumerStatefulWidget {
   const Tabs({super.key});
 
   @override
-  State<Tabs> createState() {
+  ConsumerState<Tabs> createState() {
     return _TabStateScreen();
   }
 }
 
-class _TabStateScreen extends State<Tabs> {
+class _TabStateScreen extends ConsumerState<Tabs> {
   int _selectedPageIndex = 0;
   final List<Meal> _favoriteMeal = [];
   Map<Filter, bool> _filters = {
@@ -31,60 +34,34 @@ class _TabStateScreen extends State<Tabs> {
     });
   }
 
-  void _toggleFavoriteMeal(Meal meal) {
-    final isExisting = _favoriteMeal.contains(meal);
-
-    setState(() {
-      if (isExisting) {
-        _favoriteMeal.remove(meal);
-      } else {
-        _favoriteMeal.add(meal);
-      }
-    });
-  }
 
   void _setScreen(String identifier) async {
     if (identifier == 'settings') {
       Navigator.pop(context);
-      final result = await Navigator.of(context).push<Map<Filter, bool>>(
-        MaterialPageRoute(builder: (ctx) => Filters(currentFilters: _filters)),
+      await Navigator.of(context).push<Map<Filter, bool>>(
+        MaterialPageRoute(builder: (ctx) => Filters()),
       );
-
-      if (result != null) {
-        setState(() {
-          _filters = result;
-        });
-      }
-    } else {
-      Navigator.pop(context);
     }
+
+ 
   }
 
   @override
   Widget build(BuildContext context) {
-    final availableMeals = dummyMeals.where((meal){
-      if(_filters[Filter.glutenFree]! && !meal.isGlutenFree){
-        return false;
-      }
-        if(_filters[Filter.lactoseFree]! && !meal.isLactoseFree){
-        return false;
-      }  if(_filters[Filter.vegan]! && !meal.isVegan){
-        return false;
-      }  if(_filters[Filter.vegetarian]! && !meal.isVegetarian){
-        return false;
-      }
-      return true;
-    }).toList();
+    final meals = ref.watch(mealsProvider);
+   final activeFilters =  ref.watch(flterprovider);
+   final availableMeals = ref.watch(filterMeals);
+
     Widget activePage = CategoriesScreen(
-      onToggleFavorite: _toggleFavoriteMeal,
       availableMeals: availableMeals,
     );
     var activePageTitle = 'Categories';
 
     if (_selectedPageIndex == 1) {
+      final favmeals = ref.watch(favMealProvider);
+
       activePage = Meals(
-        meals: _favoriteMeal,
-        onToggleFavorite: _toggleFavoriteMeal,
+        meals: favmeals,
       );
       activePageTitle = 'Favorite';
     }
